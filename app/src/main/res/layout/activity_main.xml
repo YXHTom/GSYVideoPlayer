@@ -16,9 +16,16 @@
         tools:context="com.example.gsyvideoplayer.MainActivity">
 
         <Button
+            android:id="@+id/open_simple"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:text="简单播放" />
+
+        <Button
             android:id="@+id/open_btn"
             android:layout_width="240dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
             android:text="打开Video" />
 
         <Button
@@ -42,6 +49,21 @@
             android:layout_marginTop="20dp"
             android:text="滤镜" />
 
+
+        <Button
+            android:id="@+id/open_btn_ad"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="带广告" />
+
+        <Button
+            android:id="@+id/open_btn_ad2"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="带广告2" />
+
         <Button
             android:id="@+id/open_btn_pick"
             android:layout_width="240dp"
@@ -61,7 +83,7 @@
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="List小窗口列表" />
+            android:text="List全屏和小窗口列表" />
 
         <Button
             android:id="@+id/recycler"
@@ -83,7 +105,7 @@
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="recycler小窗口列表" />
+            android:text="recycler全屏和小窗口列表" />
 
         <Button
             android:id="@+id/list_detail"
@@ -97,7 +119,7 @@
             android:layout_width="240dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="Detail列表模式" />
+            android:text="Detail列表模式，切换下一集" />
 
 
         <Button
@@ -149,6 +171,36 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:text="悬浮窗口" />
+
+        <Button
+            android:id="@+id/open_btn_multi"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="多任务支持" />
+
+
+        <Button
+            android:id="@+id/open_switch"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="列表详情切换" />
+
+
+        <Button
+            android:id="@+id/open_list_ad"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="列表带广告模式" />
+
+        <Button
+            android:id="@+id/open_custom_exo"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="自定义Exo" />
 
         <Button
             android:id="@+id/clear_cache"

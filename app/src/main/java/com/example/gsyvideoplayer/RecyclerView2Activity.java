@@ -12,14 +12,13 @@ import android.widget.FrameLayout;
 
 import com.example.gsyvideoplayer.adapter.RecyclerBaseAdapter;
 import com.example.gsyvideoplayer.holder.RecyclerItemViewHolder;
-import com.example.gsyvideoplayer.listener.SampleListener;
 import com.example.gsyvideoplayer.model.VideoModel;
-import com.example.gsyvideoplayer.utils.SmallVideoHelper;
+import com.shuyu.gsyvideoplayer.GSYVideoManager;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
+import com.shuyu.gsyvideoplayer.utils.GSYVideoHelper;
 import com.shuyu.gsyvideoplayer.video.NormalGSYVideoPlayer;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
 import com.shuyu.gsyvideoplayer.utils.CommonUtil;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
-import com.shuyu.gsyvideoplayer.utils.ListVideoUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +43,9 @@ public class RecyclerView2Activity extends AppCompatActivity {
 
     List<VideoModel> dataList = new ArrayList<>();
 
-    SmallVideoHelper smallVideoHelper;
+    GSYVideoHelper smallVideoHelper;
 
-    SmallVideoHelper.GSYSmallVideoHelperBuilder gsySmallVideoHelperBuilder;
+    GSYVideoHelper.GSYVideoHelperBuilder gsySmallVideoHelperBuilder;
 
     int lastVisibleItem;
 
@@ -115,7 +114,7 @@ public class RecyclerView2Activity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         smallVideoHelper.releaseVideoPlayer();
-        GSYVideoPlayer.releaseAllVideos();
+        GSYVideoManager.releaseAllVideos();
     }
 
     private void initView() {
@@ -128,18 +127,19 @@ public class RecyclerView2Activity extends AppCompatActivity {
         listItemRecycler.setAdapter(recyclerBaseAdapter);
 
 
-        smallVideoHelper = new SmallVideoHelper(this, new NormalGSYVideoPlayer(this));
+        smallVideoHelper = new GSYVideoHelper(this, new NormalGSYVideoPlayer(this));
         smallVideoHelper.setFullViewContainer(videoFullContainer);
 
         //配置
-        gsySmallVideoHelperBuilder = new SmallVideoHelper.GSYSmallVideoHelperBuilder();
+        gsySmallVideoHelperBuilder = new GSYVideoHelper.GSYVideoHelperBuilder();
         gsySmallVideoHelperBuilder
                 .setHideActionBar(true)
                 .setHideStatusBar(true)
                 .setNeedLockFull(true)
                 .setCacheWithPlay(true)
+                .setAutoFullWithSize(true)
                 .setShowFullAnimation(true)
-                .setLockLand(true).setVideoAllCallBack(new SampleListener() {
+                .setLockLand(true).setVideoAllCallBack(new GSYSampleCallBack() {
             @Override
             public void onPrepared(String url, Object... objects) {
                 super.onPrepared(url, objects);

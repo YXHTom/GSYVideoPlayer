@@ -6,11 +6,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.example.gsyvideoplayer.R;
-import com.example.gsyvideoplayer.listener.SampleListener;
 import com.example.gsyvideoplayer.model.VideoModel;
 import com.shuyu.gsyvideoplayer.GSYVideoManager;
 import com.shuyu.gsyvideoplayer.builder.GSYVideoOptionBuilder;
-import com.shuyu.gsyvideoplayer.utils.Debuger;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer;
 
 import butterknife.BindView;
@@ -78,7 +77,7 @@ public class RecyclerItemNormalHolder extends RecyclerItemBaseHolder {
                 .setShowFullAnimation(true)
                 .setNeedLockFull(true)
                 .setPlayPosition(position)
-                .setStandardVideoAllCallBack(new SampleListener() {
+                .setVideoAllCallBack(new GSYSampleCallBack() {
                     @Override
                     public void onPrepared(String url, Object... objects) {
                         super.onPrepared(url, objects);
@@ -100,6 +99,7 @@ public class RecyclerItemNormalHolder extends RecyclerItemBaseHolder {
                     public void onEnterFullscreen(String url, Object... objects) {
                         super.onEnterFullscreen(url, objects);
                         GSYVideoManager.instance().setNeedMute(false);
+                        gsyVideoPlayer.getCurrentPlayer().getTitleTextView().setText((String)objects[0]);
                     }
                 }).build(gsyVideoPlayer);
 

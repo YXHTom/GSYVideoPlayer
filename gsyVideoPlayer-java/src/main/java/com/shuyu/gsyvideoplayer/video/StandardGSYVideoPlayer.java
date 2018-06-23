@@ -20,8 +20,6 @@ import android.widget.Toast;
 import com.shuyu.gsyvideoplayer.R;
 import com.shuyu.gsyvideoplayer.listener.GSYVideoShotListener;
 import com.shuyu.gsyvideoplayer.listener.GSYVideoShotSaveListener;
-import com.shuyu.gsyvideoplayer.listener.StandardVideoAllCallBack;
-import com.shuyu.gsyvideoplayer.utils.CommonUtil;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
 import com.shuyu.gsyvideoplayer.utils.NetworkUtils;
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer;
@@ -38,8 +36,6 @@ import moe.codeest.enviews.ENPlayView;
  */
 
 public class StandardGSYVideoPlayer extends GSYVideoPlayer {
-
-    protected StandardVideoAllCallBack mStandardVideoAllCallBack;
 
     //亮度dialog
     protected Dialog mBrightnessDialog;
@@ -133,9 +129,9 @@ public class StandardGSYVideoPlayer extends GSYVideoPlayer {
      */
     @Override
     public void startPlayLogic() {
-        if (mStandardVideoAllCallBack != null) {
+        if (mVideoAllCallBack != null) {
             Debuger.printfLog("onClickStartThumb");
-            mStandardVideoAllCallBack.onClickStartThumb(mOriginUrl, mTitle, StandardGSYVideoPlayer.this);
+            mVideoAllCallBack.onClickStartThumb(mOriginUrl, mTitle, StandardGSYVideoPlayer.this);
         }
         prepareVideo();
         startDismissControlViewTimer();
@@ -147,7 +143,8 @@ public class StandardGSYVideoPlayer extends GSYVideoPlayer {
     @Override
     protected void showWifiDialog() {
         if (!NetworkUtils.isAvailable(mContext)) {
-            Toast.makeText(mContext, getResources().getString(R.string.no_net), Toast.LENGTH_LONG).show();
+            //Toast.makeText(mContext, getResources().getString(R.string.no_net), Toast.LENGTH_LONG).show();
+            startPlayLogic();
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivityContext());
@@ -364,7 +361,6 @@ public class StandardGSYVideoPlayer extends GSYVideoPlayer {
         GSYBaseVideoPlayer gsyBaseVideoPlayer = super.startWindowFullscreen(context, actionBar, statusBar);
         if (gsyBaseVideoPlayer != null) {
             StandardGSYVideoPlayer gsyVideoPlayer = (StandardGSYVideoPlayer) gsyBaseVideoPlayer;
-            gsyVideoPlayer.setStandardVideoAllCallBack(mStandardVideoAllCallBack);
             gsyVideoPlayer.setLockClickListener(mLockClickListener);
             gsyVideoPlayer.setNeedLockFull(isNeedLockFull());
             initFullUI(gsyVideoPlayer);
@@ -829,11 +825,6 @@ public class StandardGSYVideoPlayer extends GSYVideoPlayer {
         mDialogProgressNormalColor = normalColor;
     }
 
-
-    public void setStandardVideoAllCallBack(StandardVideoAllCallBack standardVideoAllCallBack) {
-        this.mStandardVideoAllCallBack = standardVideoAllCallBack;
-        setVideoAllCallBack(standardVideoAllCallBack);
-    }
 
     /************************************* 关于截图的 ****************************************/
 

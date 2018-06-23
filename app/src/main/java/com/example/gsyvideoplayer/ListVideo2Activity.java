@@ -12,9 +12,9 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import com.example.gsyvideoplayer.adapter.ListVideoAdapter;
-import com.example.gsyvideoplayer.listener.SampleListener;
-import com.example.gsyvideoplayer.utils.SmallVideoHelper;
-import com.shuyu.gsyvideoplayer.video.base.GSYVideoPlayer;
+import com.shuyu.gsyvideoplayer.GSYVideoManager;
+import com.shuyu.gsyvideoplayer.listener.GSYSampleCallBack;
+import com.shuyu.gsyvideoplayer.utils.GSYVideoHelper;
 import com.shuyu.gsyvideoplayer.utils.CommonUtil;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
 
@@ -35,11 +35,11 @@ public class ListVideo2Activity extends AppCompatActivity {
     @BindView(R.id.activity_list_video)
     RelativeLayout activityListVideo;
 
-    SmallVideoHelper smallVideoHelper;
+    GSYVideoHelper smallVideoHelper;
 
     ListVideoAdapter listVideoAdapter;
 
-    SmallVideoHelper.GSYSmallVideoHelperBuilder gsySmallVideoHelperBuilder;
+    GSYVideoHelper.GSYVideoHelperBuilder gsySmallVideoHelperBuilder;
 
     int lastVisibleItem;
 
@@ -58,11 +58,13 @@ public class ListVideo2Activity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         //创建小窗口帮助类
-        smallVideoHelper = new SmallVideoHelper(this);
-        smallVideoHelper.setFullViewContainer(videoFullContainer);
+        smallVideoHelper = new GSYVideoHelper(this);
+
+        //如果不设置即使用默认的 windowViewContainer
+        //smallVideoHelper.setFullViewContainer(videoFullContainer);
 
         //配置
-        gsySmallVideoHelperBuilder = new SmallVideoHelper.GSYSmallVideoHelperBuilder();
+        gsySmallVideoHelperBuilder = new GSYVideoHelper.GSYVideoHelperBuilder();
         gsySmallVideoHelperBuilder
                 .setHideStatusBar(true)
                 .setNeedLockFull(true)
@@ -70,7 +72,7 @@ public class ListVideo2Activity extends AppCompatActivity {
                 .setShowFullAnimation(false)
                 .setRotateViewAuto(false)
                 .setLockLand(true)
-                .setVideoAllCallBack(new SampleListener(){
+                .setVideoAllCallBack(new GSYSampleCallBack(){
             @Override
             public void onPrepared(String url, Object... objects) {
                 super.onPrepared(url, objects);
@@ -147,7 +149,7 @@ public class ListVideo2Activity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         smallVideoHelper.releaseVideoPlayer();
-        GSYVideoPlayer.releaseAllVideos();
+        GSYVideoManager.releaseAllVideos();
     }
 
 }
