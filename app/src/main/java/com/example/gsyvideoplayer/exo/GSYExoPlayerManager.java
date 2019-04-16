@@ -92,7 +92,7 @@ public class GSYExoPlayerManager implements IPlayerManager {
     @Override
     public void releaseSurface() {
         if (surface != null) {
-            surface.release();
+            //surface.release();
             surface = null;
         }
     }
@@ -228,4 +228,8 @@ public class GSYExoPlayerManager implements IPlayerManager {
         return 1;
     }
 
+    @Override
+    public boolean isSurfaceSupportLockCanvas() {
+        return false;
+    }
 }

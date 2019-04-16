@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Surface;
 
@@ -18,7 +18,6 @@ import com.shuyu.gsyvideoplayer.model.VideoOptionModel;
 import com.shuyu.gsyvideoplayer.player.IPlayerManager;
 import com.shuyu.gsyvideoplayer.player.PlayerFactory;
 import com.shuyu.gsyvideoplayer.utils.Debuger;
-import com.shuyu.gsyvideoplayer.utils.GSYVideoType;
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoViewBridge;
 
 import java.io.File;
@@ -111,11 +110,6 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
     protected int timeOut = 8 * 1000;
 
     /**
-     * 播放类型，默认IJK
-     */
-    protected int videoType = GSYVideoType.IJKPLAYER;
-
-    /**
      * 是否需要静音
      */
     protected boolean needMute = false;
@@ -142,23 +136,23 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
         if (cacheManager != null) {
             cacheManager.clearCache(context, cacheDir, url);
         } else {
-            getCacheManager(videoType).clearCache(context, cacheDir, url);
+            if(getCacheManager() != null) {
+                getCacheManager().clearCache(context, cacheDir, url);
+            }
         }
     }
 
     protected void init() {
-        HandlerThread mediaHandlerThread = new HandlerThread(TAG);
-        mediaHandlerThread.start();
-        mMediaHandler = new MediaHandler((mediaHandlerThread.getLooper()));
+        mMediaHandler = new MediaHandler((Looper.getMainLooper()));
         mainThreadHandler = new Handler();
     }
 
-    protected IPlayerManager getPlayManager(int videoType) {
-        return PlayerFactory.getPlayManager(videoType);
+    protected IPlayerManager getPlayManager() {
+        return PlayerFactory.getPlayManager();
     }
 
-    protected ICacheManager getCacheManager(int videoType) {
-        return CacheFactory.getCacheManager(videoType);
+    protected ICacheManager getCacheManager() {
+        return CacheFactory.getCacheManager();
     }
 
     @Override
@@ -199,11 +193,16 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
     }
 
     @Override
-    public void prepare(final String url, final Map<String, String> mapHeadData, boolean loop, float speed, boolean cache, File cachePath) {
+    public void prepare(String url, Map<String, String> mapHeadData, boolean loop, float speed, boolean cache, File cachePath) {
+        prepare(url, mapHeadData, loop, speed, cache, cachePath, null);
+    }
+
+    @Override
+    public void prepare(final String url, final Map<String, String> mapHeadData, boolean loop, float speed, boolean cache, File cachePath, String overrideExtension) {
         if (TextUtils.isEmpty(url)) return;
         Message msg = new Message();
         msg.what = HANDLER_PREPARE;
-        GSYModel fb = new GSYModel(url, mapHeadData, loop, speed, cache, cachePath);
+        GSYModel fb = new GSYModel(url, mapHeadData, loop, speed, cache, cachePath, overrideExtension);
         msg.obj = fb;
         sendMessage(msg);
         if (needTimeOutOther) {
@@ -407,7 +406,10 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
      */
     @Override
     public boolean cachePreview(Context context, File cacheDir, String url) {
-        return getCacheManager(videoType).cachePreview(context, cacheDir, url);
+        if(getCacheManager() != null) {
+            return getCacheManager().cachePreview(context, cacheDir, url);
+        }
+        return  false;
     }
 
     @Override
@@ -533,6 +535,15 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
         return IMediaPlayer.MEDIA_INFO_VIDEO_ROTATION_CHANGED;
     }
 
+
+    @Override
+    public boolean isSurfaceSupportLockCanvas() {
+        if (playerManager != null) {
+            return playerManager.isSurfaceSupportLockCanvas();
+        }
+        return false;
+    }
+
     protected void sendMessage(Message message) {
         mMediaHandler.sendMessage(message);
     }
@@ -579,8 +590,8 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
             if (playerManager != null) {
                 playerManager.release();
             }
-            playerManager = getPlayManager(videoType);
-            cacheManager = getCacheManager(videoType);
+            playerManager = getPlayManager();
+            cacheManager = getCacheManager();
             if (cacheManager != null) {
                 cacheManager.setCacheAvailableListener(this);
             }
@@ -650,21 +661,6 @@ public abstract class GSYVideoBaseManager implements IMediaPlayer.OnPreparedList
         if (playerManager != null) {
             playerManager.showDisplay(msg);
         }
-    }
-
-    public int getVideoType() {
-        return videoType;
-    }
-
-    /**
-     * 设置了视频的播放类型
-     * IJKPLAYER = 0; 默认IJK
-     * IJKEXOPLAYER2 = 2;EXOPlayer2
-     * SYSTEMPLAYER = 4;系统播放器
-     */
-    public void setVideoType(Context context, int videoType) {
-        this.context = context.getApplicationContext();
-        this.videoType = videoType;
     }
 
     public void initContext(Context context) {

@@ -7,9 +7,11 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.support.annotation.AttrRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.Handler;
+import android.os.Looper;
+import androidx.annotation.AttrRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.InflateException;
 import android.view.Surface;
@@ -27,7 +29,6 @@ import com.shuyu.gsyvideoplayer.utils.NetInfoModule;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
 import static com.shuyu.gsyvideoplayer.utils.CommonUtil.getTextSpeed;
 
 /**
@@ -104,7 +105,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
     protected boolean mSoundTouch = false;
 
     //是否需要显示暂停锁定效果
-    protected boolean mShowPauseCover = true;
+    protected boolean mShowPauseCover = false;
 
     //是否准备完成前调用了暂停
     protected boolean mPauseBeforePrepared = false;
@@ -138,6 +139,9 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
 
     //网络状态
     protected String mNetSate = "NORMAL";
+
+    // 是否需要覆盖拓展类型
+    protected String mOverrideExtension;
 
     //缓存路径，可不设置
     protected File mCachePath;
@@ -177,15 +181,17 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         if (mCurrentState == CURRENT_STATE_PAUSE && mFullPauseBitmap != null
                 && !mFullPauseBitmap.isRecycled() && mShowPauseCover
                 && mSurface != null && mSurface.isValid()) {
-            try {
-                RectF rectF = new RectF(0, 0, mTextureView.getWidth(), mTextureView.getHeight());
-                Canvas canvas = mSurface.lockCanvas(new Rect(0, 0, mTextureView.getWidth(), mTextureView.getHeight()));
-                if (canvas != null) {
-                    canvas.drawBitmap(mFullPauseBitmap, null, rectF, null);
-                    mSurface.unlockCanvasAndPost(canvas);
+            if (getGSYVideoManager().isSurfaceSupportLockCanvas()) {
+                try {
+                    RectF rectF = new RectF(0, 0, mTextureView.getWidth(), mTextureView.getHeight());
+                    Canvas canvas = mSurface.lockCanvas(new Rect(0, 0, mTextureView.getWidth(), mTextureView.getHeight()));
+                    if (canvas != null) {
+                        canvas.drawBitmap(mFullPauseBitmap, null, rectF, null);
+                        mSurface.unlockCanvasAndPost(canvas);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
 
@@ -325,7 +331,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         mAudioManager.requestAudioFocus(onAudioFocusChangeListener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
         ((Activity) getActivityContext()).getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mBackUpPlayingBufferState = -1;
-        getGSYVideoManager().prepare(mUrl, (mMapHeadData == null) ? new HashMap<String, String>() : mMapHeadData, mLooping, mSpeed, mCache, mCachePath);
+        getGSYVideoManager().prepare(mUrl, (mMapHeadData == null) ? new HashMap<String, String>() : mMapHeadData, mLooping, mSpeed, mCache, mCachePath, mOverrideExtension);
         setStateAndUi(CURRENT_STATE_PREPAREING);
     }
 
@@ -337,31 +343,60 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
         public void onAudioFocusChange(int focusChange) {
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
+                    onGankAudio();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mReleaseWhenLossAudio) {
-                                releaseVideos();
-                            } else {
-                                onVideoPause();
-                            }
-                        }
-                    });
+                    onLossAudio();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    try {
-                        onVideoPause();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    onLossTransientAudio();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    onLossTransientCanDuck();
                     break;
             }
         }
     };
+
+    /**
+     * 获得了Audio Focus
+     */
+    protected void onGankAudio() {
+    }
+
+    /**
+     * 失去了Audio Focus，并将会持续很长的时间
+     */
+    protected void onLossAudio() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            public void run() {
+                if (GSYVideoView.this.mReleaseWhenLossAudio) {
+                    GSYVideoView.this.releaseVideos();
+                } else {
+                    GSYVideoView.this.onVideoPause();
+                }
+
+            }
+        });
+    }
+
+    /**
+     * 暂时失去Audio Focus，并会很快再次获得
+     */
+    protected void onLossTransientAudio() {
+        try {
+            this.onVideoPause();
+        } catch (Exception var2) {
+            var2.printStackTrace();
+        }
+
+    }
+
+    /**
+     * 暂时失去AudioFocus，但是可以继续播放，不过要在降低音量
+     */
+    protected void onLossTransientCanDuck() {
+    }
 
 
     /**
@@ -547,6 +582,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
 
         if (!mStartAfterPrepared) {
             setStateAndUi(CURRENT_STATE_PAUSE);
+            onVideoPause();//todo 加上这个
             return;
         }
 
@@ -605,7 +641,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
 
     @Override
     public void onSeekComplete() {
-
+        Debuger.printfLog("onSeekComplete");
     }
 
     @Override
@@ -1013,7 +1049,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
      */
     public void setSpeedPlaying(float speed, boolean soundTouch) {
         setSpeed(speed, soundTouch);
-        getGSYVideoManager().setSpeedPlaying( speed,  soundTouch);
+        getGSYVideoManager().setSpeedPlaying(speed, soundTouch);
     }
 
     public boolean isShowPauseCover() {
@@ -1036,7 +1072,7 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
      */
     public void seekTo(long position) {
         try {
-            if (getGSYVideoManager()!= null && position > 0) {
+            if (getGSYVideoManager() != null && position > 0) {
                 getGSYVideoManager().seekTo(position);
             }
         } catch (Exception e) {
@@ -1076,11 +1112,24 @@ public abstract class GSYVideoView extends GSYTextureRenderView implements GSYMe
 
     /**
      * 单独设置mapHeader
+     *
      * @param headData
      */
     public void setMapHeadData(Map<String, String> headData) {
         if (headData != null) {
             this.mMapHeadData = headData;
         }
+    }
+
+    public String getOverrideExtension() {
+        return mOverrideExtension;
+    }
+
+    /**
+     * 是否需要覆盖拓展类型，目前只针对exoPlayer内核模式有效
+     * @param overrideExtension 比如传入 m3u8,mp4,avi 等类型
+     */
+    public void setOverrideExtension(String overrideExtension) {
+        this.mOverrideExtension = overrideExtension;
     }
 }

@@ -6,7 +6,7 @@
 类型 | 功能
 -------- | ---
 **缓存**|**边播边缓存，使用了[AndroidVideoCache](https://github.com/danikula/AndroidVideoCache)；ExoPlayer使用SimpleCache。**
-**协议**|**h263\4\5、Https、concat、rtsp、hls、rtmp、crypto、mpeg等等。**
+**协议**|**h263\4\5、Https、concat、rtsp、hls、rtmp、crypto、mpeg等等。[（ijk模式格式支持）](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
 **滤镜**|**简单滤镜（马赛克、黑白、色彩过滤、高斯、模糊、模糊等等20多种）、动画、（水印、画面多重播放等）。**
 **帧图**|**视频第一帧、视频帧截图功能，视频生成gif功能。**
 **播放**|**列表播放、列表连续播放、重力旋转与手动旋转、视频本身rotation旋转属性、快播和慢播、网络视频加载速度。**
@@ -19,7 +19,7 @@
 **更多**|**暂停前后台切换不黑屏；调整不同清晰度的支持；无缝切换支持；锁定/解锁全屏点击功能；进度条小窗口预览（测试）。**
 **自定义**|**可自定义渲染层、自定义管理层、自定义播放层（控制层）、自定义缓存层。**
 
-
+[ ![Download](https://api.bintray.com/packages/carguo/GSYVideoPlayer/gsyVideoPlayer-java/images/download.svg) ](https://bintray.com/carguo/GSYVideoPlayer/gsyVideoPlayer-java/_latestVersion)
 [![](https://jitpack.io/v/CarGuo/GSYVideoPlayer.svg)](https://jitpack.io/#CarGuo/GSYVideoPlayer)
 [ ![Download](https://api.bintray.com/packages/carguo/GSYVideoPlayer/gsyVideoPlayer/images/download.svg) ](https://bintray.com/carguo/GSYVideoPlayer/gsyVideoPlayer/_latestVersion)
 [![Build Status](https://travis-ci.org/CarGuo/GSYVideoPlayer.svg?branch=master)](https://travis-ci.org/CarGuo/GSYVideoPlayer)
@@ -36,7 +36,7 @@
 
 ## 一、使用依赖
 
-##### 新版本调整了代码结构，如更新后显示类路径错误，参考demo调整包路径即可。
+#### 7.0版本使用了anndroidx，support版本请看6.x.x，请查看：[--- 版本更新说明 - 入口](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)。
 
 ### 1、JCenter 引入方法（推荐）
 
@@ -45,21 +45,24 @@
 #### A、直接引入
 ```
 //完整版引入
-compile 'com.shuyu:GSYVideoPlayer:5.0.0-beta'
+implementation 'com.shuyu:GSYVideoPlayer:7.0.1'
 
 ```
 
 #### B、添加java和你想要的so支持：
 
 ```
-compile 'com.shuyu:gsyVideoPlayer-java:5.0.0-beta'
+implementation 'com.shuyu:gsyVideoPlayer-java:7.0.1'
 
-//根据你的需求
-compile 'com.shuyu:gsyVideoPlayer-armv5:5.0.0-beta'
-compile 'com.shuyu:gsyVideoPlayer-armv7a:5.0.0-beta'
-compile 'com.shuyu:gsyVideoPlayer-arm64:5.0.0-beta'
-compile 'com.shuyu:gsyVideoPlayer-x64:5.0.0-beta'
-compile 'com.shuyu:gsyVideoPlayer-x86:5.0.0-beta'
+//是否需要ExoPlayer模式
+implementation 'com.shuyu:GSYVideoPlayer-exo2:7.0.1'
+
+//根据你的需求ijk模式的so
+implementation 'com.shuyu:gsyVideoPlayer-armv5:7.0.1'
+implementation 'com.shuyu:gsyVideoPlayer-armv7a:7.0.1'
+implementation 'com.shuyu:gsyVideoPlayer-arm64:7.0.1'
+implementation 'com.shuyu:gsyVideoPlayer-x64:7.0.1'
+implementation 'com.shuyu:gsyVideoPlayer-x86:7.0.1'
 
 ```
 
@@ -69,9 +72,68 @@ A、B普通版本支持263/264/265等，对于mpeg编码会有声音无画面情
 C 引入的so支持mpeg编码和其他补充协议，但是so包相对变大。
  
 ```
-compile 'com.shuyu:gsyVideoPlayer-java:5.0.0-beta'
+implementation 'com.shuyu:gsyVideoPlayer-java:7.0.1'
 
-compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.0-beta'
+//是否需要ExoPlayer模式
+implementation 'com.shuyu:GSYVideoPlayer-exo2:7.0.1'
+
+//更多ijk的编码支持
+implementation 'com.shuyu:gsyVideoPlayer-ex_so:7.0.1'
+
+```
+
+#### D、代码中的全局切换支持（更多请参看下方文档和demo）
+
+```
+
+//EXOPlayer内核，支持格式更多
+PlayerFactory.setPlayManager(Exo2PlayerManager.class);
+//系统内核模式
+PlayerFactory.setPlayManager(SystemPlayerManager.class);
+//ijk内核，默认模式
+PlayerFactory.setPlayManager(IjkPlayerManager.class);
+
+
+//exo缓存模式，支持m3u8，只支持exo
+CacheFactory.setCacheManager(ExoPlayerCacheManager.class);
+//代理缓存模式，支持所有模式，不支持m3u8等，默认
+CacheFactory.setCacheManager(ProxyCacheManager.class);
+
+
+
+//切换渲染模式
+GSYVideoType.setShowType(GSYVideoType.SCREEN_MATCH_FULL);
+//默认显示比例
+GSYVideoType.SCREEN_TYPE_DEFAULT = 0;
+//16:9
+GSYVideoType.SCREEN_TYPE_16_9 = 1;
+//4:3
+GSYVideoType.SCREEN_TYPE_4_3 = 2;
+//全屏裁减显示，为了显示正常 CoverImageView 建议使用FrameLayout作为父布局
+GSYVideoType.SCREEN_TYPE_FULL = 4;
+//全屏拉伸显示，使用这个属性时，surface_container建议使用FrameLayout
+GSYVideoType.SCREEN_MATCH_FULL = -4;
+
+
+
+//切换绘制模式
+GSYVideoType.setRenderType(GSYVideoType.SUFRACE);
+GSYVideoType.setRenderType(GSYVideoType.GLSURFACE);
+GSYVideoType.setRenderType(GSYVideoType.TEXTURE);
+
+
+//ijk关闭log
+IjkPlayerManager.setLogLevel(IjkMediaPlayer.IJK_LOG_SILENT);
+
+
+//exoplayer自定义MediaSource
+ExoSourceManager.setExoMediaSourceInterceptListener(new ExoMediaSourceInterceptListener() {
+    @Override
+    public MediaSource getMediaSource(String dataSource, boolean preview, boolean cacheEnable, boolean isLooping, File cacheDir) {
+        //可自定义MediaSource
+        return null;
+    }
+});
 
 ```
 
@@ -80,7 +142,7 @@ compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.0-beta'
 ## 二、其他推荐
 
 ### * QQ群，有兴趣的欢迎（平时吹水吐槽多，因为人数饱和，目前开启付费入群）：174815284 。
-### * [React Native Github客户端](https://github.com/CarGuo/GSYGithubAPP) 、 [Weex Github客户端](https://github.com/CarGuo/GSYGithubAPPWeex)
+### * [Flutter Github客户端](https://github.com/CarGuo/GSYGithubAPPFlutter) 、[React Native Github客户端](https://github.com/CarGuo/GSYGithubAPP) 、 [Weex Github客户端](https://github.com/CarGuo/GSYGithubAPPWeex) 、 [原生 Kotlin Github客户端](https://github.com/CarGuo/GSYGithubAPPKotlin)
 ### * [RickText](https://github.com/CarGuo/RickText)
 ### * [LazyRecyclerAdapter](https://github.com/CarGuo/LazyRecyclerAdapter)
 
@@ -92,7 +154,7 @@ compile 'com.shuyu:gsyVideoPlayer-ex_so:5.0.0-beta'
 **项目解析说明**|***[--- 项目解析说明、包含项目架构和解析](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/GSYVIDEO_PLAYER_PROJECT_INFO.md)***
 接口文档入口|**[--- 使用说明、接口文档 - 入口](https://github.com/CarGuo/GSYVideoPlayer/wiki)**
 **问题集锦入口**|***[--- 问题集锦 - 入口（大部分你遇到的问题都在这里解决） ](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/QUESTION.md)***
-IJK编码格式|**[--- 项目支持视频格式（如果遇上黑屏，没声音）](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
+编码格式|**[--- IJK so文件配置格式说明](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/DECODERS.md)**
 编译自定义SO|**[--- IJKPlayer编译自定义SO - 入口](http://www.jianshu.com/p/bd289e25d272)**
 版本更新说明|**[--- 版本更新说明 - 入口](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)**
 
@@ -127,16 +189,32 @@ IJK编码格式|**[--- 项目支持视频格式（如果遇上黑屏，没声音
 
 ## 五、近期版本
 
-### 5.0.0-beta(2018-05-24)
-* 调整cache机制，抽离cache管理器。
-* update ExoPlayer to 2.8.0，全面针对ExoPlayer进行优化
-* 优化ExoPlayer的问题
-* 增加ExoPlayer循环播放支持
-* 增加ExoPlayer自定义DEMO，演示ExoPlayer实现无缝切换
-* ijk的`logLevel`、`ijkLibLoader`直接通过IJKPlayerManager静态方法设置
-* 进一步调整框架结构和内部耦合度
+
+### 7.0.1(2019-04-07)
+* 升级 ExoPlayer 到 2.9.6
+* ExoPlayer 增加 SSL 证书忽略支持
+``` 
+ExoSourceManager.setSkipSSLChain(true);
+```
+* 修复全屏动画过程中按下返回键问题 #1938
+* 修复全屏下的弹窗消失问题 #1927
+* 修复全屏切换过程过程中的音频焦点问题 #1912
+* 修复按键判空问题 #1919
+* 修复全屏切换surface的release问题
 
 
+
+### 7.0.0-beta1(2019-03-03)
+* orientation 增加 pause
+```
+ orientationUtils.setIsPause(true);
+```
+* update exoPlayer to 2.9.5。
+* exoPlayer 和 mediaPlayer 支持网速显示。
+* 修复一些问题。
+* 支持库切换到 androidx
+
+### 非 androidx 版本为 6.0.3 以下版本。更多兼容版本请查阅版本更新。
 
 ### 更多版本请查阅：[版本更新说明](https://github.com/CarGuo/GSYVideoPlayer/blob/master/doc/UPDATE_VERSION.md)
 

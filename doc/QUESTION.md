@@ -1,6 +1,10 @@
 ## GSYVideoPlayer 问题集锦
 
-#### 0、依赖不成功的，如果是jitpach的依赖，记得在project下的build.gradle文件jitpack的依赖。
+#### ijkplayer模式的，你可能会需要的option大全 : [ff_ffplay_options.h](https://github.com/Bilibili/ijkplayer/blob/cced91e3ae3730f5c63f3605b00d25eafcf5b97b/ijkmedia/ijkplayer/ff_ffplay_options.h)
+
+**ijkplayer问题第三方总结 https://juejin.im/entry/5bc7e7d6e51d450e4f392088**
+
+#### 0、依赖不成功的，如果是jitpach的依赖，记得在project下的build.gradle文件jitpack的依赖。（已弃用jitpack）
 ```
 allprojects {
 	repositories {
@@ -122,7 +126,7 @@ GSYVideoManager.instance().setOptionModelList(list);
 #### 11、有画面没声音，有声音没画面。
 1、这种情况一般都是so里没有打包支持的格式，如果需要支持你想要的格式，可以自己重新编译so，在module配置文件加上需要额外支持的格式。github首页有编译教程。
 
-[2、某些时候，TextureView需要开启硬件加速](https://github.com/CarGuo/GSYVideoPlayer/issues/266)
+[2、某些时候，TextureView需要开启硬件加速](https://github.com/CarGuo/GSYVideoPlayer/issues/266) 如application标签中的 `android:hardwareAccelerated="true"`
 
 #### 12、视频声音画面不同步。
 
@@ -294,3 +298,19 @@ VideoOptionModel videoOptionModel =
         list.add(videoOptionModel);
         GSYVideoManager.instance().setOptionModelList(list);
 ```
+
+#### 21、AudioManager泄漏
+
+https://stackoverflow.com/questions/6445052/android-context-memory-leak-listview-due-to-audiomanager
+
+
+
+#### 更多配置
+
+更多配置可通过下方链接和图片参考配置
+
+
+##### [ff_ffplay_options](https://github.com/Bilibili/ijkplayer/blob/cced91e3ae3730f5c63f3605b00d25eafcf5b97b/ijkmedia/ijkplayer/ff_ffplay_options.h)
+
+![](https://raw.githubusercontent.com/CarGuo/GSYVideoPlayer/master/img/code/option1.jpg)
+![](https://raw.githubusercontent.com/CarGuo/GSYVideoPlayer/master/img/code/option2.jpg)
